@@ -14,9 +14,17 @@ y,x = frame.shape[:2]
 pts = np.array([[0,y],[x,y],[5*x//9,int(y*0.6)],[4*x//9,int(y*0.6)]])
 ROI = cv2.fillPoly(ROI,[pts],(255,255,255))
 ROI_img = cv2.bitwise_and(frame,ROI)
-thresh = cv2.inRange(HSV,line_lower,line_upper)
+HSV_ROI = cv2.cvtColor(ROI_img,cv2.COLOR_BGR2HSV)
 
-cv2.imshow('image',ROI_img)
+thresh = cv2.inRange(HSV_ROI,line_lower,line_upper)
+# adge = cv2.Canny(thresh,300,400)
+linesP = cv2.HoughLinesP(thresh,1,np.pi/180,threshold=50,minLineLength=40,maxLineGap=100)
+for line in linesP:
+    for (x1,y1,x2,y2) in line:
+        cv2.line(frame,(x1,y1),(x2,y2),(255,0,0),2)
+
+print(len(linesP))
+cv2.imshow('image',frame)
 cv2.waitKey(0)
 
 cv2.release()
