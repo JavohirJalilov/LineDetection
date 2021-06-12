@@ -52,10 +52,12 @@ left_line_x2 = int((y - leftavgIntercept)/leftavgSlope)
 right_line_x1 = int((0.65*y - rightavgIntercept)/rightavgSlope)
 right_line_x2 = int((y - rightavgIntercept)/rightavgSlope)
 
-cv2.line(frame,(left_line_x1,int(0.65*y)),(left_line_x2,y),(255,0,0),3)
+pts = np.array([[left_line_x1,int(0.65*y)],[left_line_x2,y],[right_line_x2,y],[right_line_x1,int(0.65*y)]])
+
+cv2.fillPoly(frame,[pts],(255,0,0))
+cv2.line(frame,(left_line_x1,int(0.65*y)),(left_line_x2,y),(0,0,255),3)
 cv2.line(frame,(right_line_x1,int(0.65*y)),(right_line_x2,y),(0,255,0),3)
 
-print(leftavgIntercept)
 cv2.imshow('image',frame)
 cv2.waitKey(0)
 
