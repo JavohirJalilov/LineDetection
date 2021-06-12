@@ -60,7 +60,7 @@ while True:
     cv2.line(frame,(right_line_x1,int(0.65*y)),(right_line_x2,y),(0,255,0),3)
 
     cv2.imshow('image',frame)
-    if cv2.waitKey(1) == 27:
+    if cv2.waitKey(20) == 27:
         break
 
 cv2.release()
