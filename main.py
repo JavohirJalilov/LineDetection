@@ -2,24 +2,35 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-cap = cv2.VideoCapture('roads_line.mp4')
+cap = cv2.VideoCapture('sam_road.MOV')
 
 while True:
     ret,frame = cap.read()
+    cv2.imwrite('frame_dinamo.png', frame)
     HSV = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-    H = 200//2
-    line_lower = np.array([90,140,100],np.uint8)
-    line_upper = np.array([110,200,180],np.uint8)
+    H_orange = 52//2
+    orange_lower = np.array([H_orange-5,30,40],dtype=np.uint8)
+    orange_upper = np.array([H_orange+5,230,240],dtype=np.uint8)
+
+    H_white = 125//2
+    white_lower = np.array([H_white-10,10,110],dtype=np.uint8)
+    white_upper = np.array([H_white+10,30,200],dtype=np.uint8)
+
     ROI = np.zeros(frame.shape,np.uint8)
     y,x = frame.shape[:2]
-    pts = np.array([[0,y],[x,y],[5*x//9,int(y*0.6)],[4*x//9,int(y*0.6)]])
+    # pts = np.array([[0,y],[x,y],[5*x//8,int(y*0.6)],[4*x//10,int(y*0.6)]])
+    pts = np.array([[0,y-100],[x,y-100],[5*x//8,int(y*0.65)],[4*x//10,int(y*0.65)]])
     ROI = cv2.fillPoly(ROI,[pts],(255,255,255))
     ROI_img = cv2.bitwise_and(frame,ROI)
-    HSV_ROI = cv2.cvtColor(ROI_img,cv2.COLOR_BGR2HSV)
 
-    thresh = cv2.inRange(HSV_ROI,line_lower,line_upper)
-    # adge = cv2.Canny(thresh,300,400)
-    linesP = cv2.HoughLinesP(thresh,1,np.pi/180,threshold=50,minLineLength=40,maxLineGap=100)
+    HSV_ROI = cv2.cvtColor(ROI_img,cv2.COLOR_BGR2HSV)
+    thresh_orange = cv2.inRange(HSV_ROI,orange_lower,orange_upper)
+    thresh_white = cv2.inRange(HSV_ROI,white_lower,white_upper)
+    roads = cv2.add(thresh_orange,thresh_white)
+    roads = cv2.morphologyEx(roads, cv2.MORPH_OPEN, np.ones((3,3),np.uint8))
+
+    # adge = cv2.Canny(roads,300,400)
+    linesP = cv2.HoughLinesP(roads,1,np.pi/180,threshold=10,minLineLength=5,maxLineGap=30)
 
     rightSlope = []
     leftSlope = []
@@ -59,8 +70,13 @@ while True:
     cv2.line(frame,(left_line_x1,int(0.65*y)),(left_line_x2,y),(0,0,255),3)
     cv2.line(frame,(right_line_x1,int(0.65*y)),(right_line_x2,y),(0,255,0),3)
 
-    cv2.imshow('image',frame)
-    if cv2.waitKey(20) == 27:
+    w,h = frame.shape[:2]
+    # roads = cv2.resize(roads,(h//2,w//2))
+    frame = cv2.resize(frame, (h//2,w//2))
+    cv2.imshow('frame',frame)
+    # cv2.imshow('ROI',roads)
+    
+    if cv2.waitKey(0) == 27:
         break
 
 cv2.release()
